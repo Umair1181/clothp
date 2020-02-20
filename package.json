@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.8.11",
+    "multer": "^1.4.2",
+    "multer-gridfs-storage": "^4.0.2",
+    "nodemon": "^2.0.2"
+  },
+  "name": "clothProject",
+  "version": "1.0.0",
+  "description": "Description",
+  "main": "server.js",
+  "author": "Umair maqbool <umairmaqbool.1181@gmail.com>",
+  "license": "MIT"
+}
