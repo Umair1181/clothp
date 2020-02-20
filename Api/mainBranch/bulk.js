@@ -184,41 +184,67 @@ Router.post( "/sending-to-dyeing-bulk", (req, res) =>{
 
     if( errorMessage === false ){
         Bulk.findOne({ _id: bulkId })
-        .populate({ path: "process.processStage" })
+        // .populate({ path: "process",  options: { sort: { processLevel: 1 } }})
+        // .sort({ "process.processStage.level": -1 })
         .then( async foundBulk =>{
             if( foundBulk !== null ){
-                let tests = 0 ;
-                console.log("FOUND BULK")
-                console.log(sendingToDyeingBulk.totalExpenseCost);
 
-                let data = await separateBulksData( foundBulk, foundBulk.processStage );
+                let myArray = [];
+                let obj = {};
+                for (let i = 0; i < foundBulk.process.length; i++) {
+                    const element = foundBulk.process[i];
+                    
+                    if( element.processLevel > foundBulk.process[i+1].processLevel ){
 
-                new calculatioClass().calculate( data, sendingToDyeingBulk )
-                .then( nextStageProcess => {
-                    if( nextStageProcess ){
-                        return res.json ({nextStageProcess:nextStageProcess, msg: "Bulk Promoted To Next Level!", success:true }).status( 200 );
-
-                        // foundBulk.process.push( nextStageProcess );
-                        // foundBulk.processStage = sendingToDyeingBulk.processStage ;
-                        // foundBulk.save()
-                        // .then( sFoundBulk => {
-                        //     if( sFoundBulk  ){
-                        //         return res.json ({ msg: "Bulk Promoted To Next Level!", success:true }).status( 200 );
-                        //     }else{
-                        //         return res.json ({ msg: "Failed!", success:false }).status( 400 );
-                        //     }
-                        // } )
-                        // .catch( err=> {
-                        //     console.log( err );
-                        //     return res.json ({ msg: "Bulk Updated To Next Level!", success:false }).status( 400 );
-                        // } )
-                        // return res.json ({ msg: "bulk", bulk : foundBulk,  success:true}).status(200);
+                    }else{
+                        console.log( `${element.processLevel > foundBulk.process[i+1].processLevel}` )
                     }
-                } )
-                .catch( err=> {
-                    return res.json ({ msg: "err" , error: err, success:false}).status( 400 );
-                } )
-                ;
+                    let obj = element ;
+                    myArray.push( element );
+
+                }
+                
+
+                // let data = await separateBulksData( foundBulk, foundBulk.processStage );
+                return res.json ({ nextStageProcess: myArray, msg: "Bulk Promoted To Next Level!", success:true }).status( 200 );
+
+                // new calculatioClass().calculate( foundBulk, sendingToDyeingBulk )
+                // .then(  nextStageProcess => {
+                //     if( nextStageProcess ){
+                //         // let bulkStage = await BulkStages.findOne({ _id: newData.processStage });
+                        
+                //         // let myProcess ={
+                //         //     length: nextStageProcess.length,
+                //         //     ppm: nextStageProcess.ppm,
+                //         //     totalCost: nextStageProcess.totalCost,
+                //         //     shortage: nextStageProcess.shortage,
+                //         //     processLevel: bulkStage.level,
+                //         //     processStage: bulkStage._id,
+                //         //     expenseList: newData.expenseList                          
+                //         // }
+                //         return res.json ({ nextStageProcess: foundBulk, msg: "Bulk Promoted To Next Level!", success:true }).status( 200 );
+
+                //         // foundBulk.process.push( nextStageProcess );
+                //         // foundBulk.processStage = sendingToDyeingBulk.processStage ;
+                //         // foundBulk.save()
+                //         // .then( sFoundBulk => {
+                //         //     if( sFoundBulk  ){
+                //         //         return res.json ({ msg: "Bulk Promoted To Next Level!", success:true }).status( 200 );
+                //         //     }else{
+                //         //         return res.json ({ msg: "Failed!", success:false }).status( 400 );
+                //         //     }
+                //         // } )
+                //         // .catch( err=> {
+                //         //     console.log( err );
+                //         //     return res.json ({ msg: "Bulk Updated To Next Level!", success:false }).status( 400 );
+                //         // } )
+                //         // return res.json ({ msg: "bulk", bulk : foundBulk,  success:true}).status(200);
+                //     }
+                // } )
+                // .catch( err=> {
+                //     return res.json ({ msg: "err" , error: err, success:false}).status( 400 );
+                // } )
+                // ;
                 // new calculatioClass().getPPMWithExpense(oldlength, oldPPM, costThisStep)
                 // .then( async costppm => {
                 //     let totoalcost = await new calculatioClass().getCost( costppm , oldlength  );
@@ -403,7 +429,7 @@ const separateBulksData = async ( sBulk, stage ) =>{
 
     return {
         _id: sBulk._id ,
-        newBulkData: newBulkStageData,
+        processData: newBulkStageData,
         vendor: sBulk.vendor  ,
         processStage: sBulk.processStage
     }
