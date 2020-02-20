@@ -52,6 +52,7 @@ class CostCalculationClass{
     }
 
     async getCost ( ){
+        console.log( `${this.ppm} * ${this.length}` )
         this.totalCost = await ( this.ppm * this.length );
         return this.totalCost ;
     }

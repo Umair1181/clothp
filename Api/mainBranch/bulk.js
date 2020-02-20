@@ -2,6 +2,29 @@ const Router = require("express").Router();
 const { Bulk, BulkStages} = require("../../Modal");
 const { NEW_BULK } = require( "./bulkStages" );
 const calculatioClass  = require("../businessLogic/costCalculation");
+
+
+Router.post ( "/on-stages-bulks-list", ( req, res )=>{
+    const { stage_id }   = req.body;
+    Bulk.find({ processStage: stage_id })
+    .then( async foundBulks => {
+        if( foundBulks.length > 0 ){
+            return res.json ({ msg: "New Bulks LIST!",Bulks: foundBulks,  success: true }).status( 200);
+        }else{
+            let bulkStage =  await BulkStages.findOne({ _id: stage_id });
+            return res.json ({ msg: `NO ${bulkStage.name}!`, success: false }).status( 404 );
+        }
+    } ) 
+    .catch( err=> {
+        console.log  ( err );
+        return res.json ({ msg: "Failed!" , success:false}).status( 400 );
+    } )
+} )
+
+
+
+
+
 Router.post( "/add_bulk_stage", ( req, res ) =>{
     const { processName, level }  = req.body ;
     if( processName === "" || level === "" ){
@@ -173,20 +196,22 @@ Router.post( "/sending-to-dyeing-bulk", (req, res) =>{
                 new calculatioClass().calculate( data, sendingToDyeingBulk )
                 .then( nextStageProcess => {
                     if( nextStageProcess ){
-                        foundBulk.process.push( nextStageProcess );
-                        foundBulk.processStage = sendingToDyeingBulk.processStage ;
-                        foundBulk.save()
-                        .then( sFoundBulk => {
-                            if( sFoundBulk  ){
-                                return res.json ({ msg: "Bulk Promoted To Next Level!", success:true }).status( 200 );
-                            }else{
-                                return res.json ({ msg: "Failed!", success:false }).status( 400 );
-                            }
-                        } )
-                        .catch( err=> {
-                            console.log( err );
-                            return res.json ({ msg: "Bulk Updated To Next Level!", success:false }).status( 400 );
-                        } )
+                        return res.json ({nextStageProcess:nextStageProcess, msg: "Bulk Promoted To Next Level!", success:true }).status( 200 );
+
+                        // foundBulk.process.push( nextStageProcess );
+                        // foundBulk.processStage = sendingToDyeingBulk.processStage ;
+                        // foundBulk.save()
+                        // .then( sFoundBulk => {
+                        //     if( sFoundBulk  ){
+                        //         return res.json ({ msg: "Bulk Promoted To Next Level!", success:true }).status( 200 );
+                        //     }else{
+                        //         return res.json ({ msg: "Failed!", success:false }).status( 400 );
+                        //     }
+                        // } )
+                        // .catch( err=> {
+                        //     console.log( err );
+                        //     return res.json ({ msg: "Bulk Updated To Next Level!", success:false }).status( 400 );
+                        // } )
                         // return res.json ({ msg: "bulk", bulk : foundBulk,  success:true}).status(200);
                     }
                 } )
